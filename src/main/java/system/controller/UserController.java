@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import system.model.User;
-import system.service.UseService;
+import system.service.UserServiceImpl;
 
 import java.util.List;
 
@@ -19,29 +19,33 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     @Autowired
-    private UseService useService;
+    private UserServiceImpl userService;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody
     List<User> getAllUsers() {
-        return useService.getAllUsers();
+        return userService.getAllUsers();
     }
 
     @RequestMapping(value = "/validate", method = RequestMethod.GET)
     public ModelAndView validateUser() {
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("userFromServer", new User());
+        modelAndView.addObject("userFromServer", new User("login", "password"));
         modelAndView.setViewName("users_check_page");
         return modelAndView;
     }
 
     @RequestMapping(value = "/check", method = RequestMethod.POST)
     public @ResponseBody
-    String checkUser(@ModelAttribute("userFromServer") User user) {
-        if ("admin".equals(user.getName()) && "admin".equals(user.getPassword())) {
-            return "valid";
+    ModelAndView checkUser(@ModelAttribute("userFromServer") User user) {
+        ModelAndView modelAndView = new ModelAndView();
+        if (userService.checkUser(user)) {
+            modelAndView.setViewName("valid");
+        } else {
+            modelAndView.setViewName("invalid");
         }
-        return "invalid";
+
+        return modelAndView;
     }
 }
 
